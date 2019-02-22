@@ -46,6 +46,18 @@ $ base64 -d $f | xxd -r > $i.jpg
 ```
 command `base64 -d` berfungsi untuk mendecode file-file yang telah dienkripsi sebelumnya yang lalu akan menjadi hexdump. Kemudian output dari command ini kita pipe `|` dan diubah menjadi file aslinya (direverse) dengan command `xxd -r`. File-file jpg yang sudah di *decrypt* lalu di pindah ke folder semula dengan nama yang sama, sehingga file-file lama yang masih ter*enkripsi* tergantikan oleh file jpg yang dapat dibuka.
 
+Untuk memenuhi syarat kondisi file akan dibuka ketika pukul 14:14 pada tanggal 14 Februari atau hari tersebut adalah hari jumat pada bulan Februari maka ditambahkan crontab.,
+```sh
+crontab -e
+```
+
+Akan muncul sebuah file, dan pada akhir file tersebut tambahkan cronjob
+```sh
+14 14 14 2 * /bin/bash /home/Penunggu/Documents/sisop1/soal1/soal1.sh
+0 0 0 2 5 /bin/bash /home/Penunggu/Documents/sisop1/soal1/soal1.sh
+```
+
+Dimana crontab pertama digunakan agar bash script dijalankan ketika pukul 14:14 pada tanggal 14 Februari. Sedangkan crontab kedua digunakan untuk menjalankan bash script pada hari jumat pada bulan Februari.
 
 ### 2. Soal 2
 ##### Anda merupakan pegawai magang pada sebuah perusahaan retail, dan anda diminta untuk memberikan laporan berdasarkan file WA_Sales_Products_2012-14.csv. Laporan yang diminta berupa:
@@ -213,7 +225,7 @@ done
 
 ```
 
-kemudian dilakukan while loop dimana selama loop dilakukan dalam folder sekarang file `password$i` dicek apakah ada dan merupakan suatu file. Kemudian variabel ya digunakan untuk menyimpan password yang ada dalam file dengan indeks `i` looping-an saat itu. Apabila password yang di-*generate* sama dengan password yang dicek saat itu (variabel ya), maka password akan digenerate lagi dikarenakan adanya syarat tidak boleh ada password yang sama.
+kemudian dilakukan while loop dimana selama loop dilakukan dalam folder sekarang, file `password$i` dicek apakah ada dan merupakan suatu file. Kemudian variabel `ya` digunakan untuk menyimpan password yang ada dalam file dengan indeks `i` looping-an saat itu. Apabila password yang di-*generate* sama dengan password yang dicek saat itu (variabel `ya`), maka password akan digenerate lagi dikarenakan adanya syarat tidak boleh ada password yang sama.
 
 Namun jika ternyata tidak sama, maka password akan ditulis dalam file password yang indeks `i`-nya sudah di*increment*.
 
@@ -257,11 +269,12 @@ awk '{ a[$0] } END { for (i in a) { print i }}' /var/log/syslog | tr '{'$big':0:
 
 Agar file log terbackup tiap jam, maka perlu ditambahkan crontab.
 
-``sh
+```sh
 $crontab -e
-``
+```
 
 lalu akan muncul file  `/tmp/crontab.r3hRkM/crontab`. Pada bagian bawah file, tambahkan cronjob
+
 ```sh
 */60 * * * * /bin/bash /home/Penunggu/Documents/sisop1/soal4/soal4.sh
 
@@ -277,7 +290,7 @@ cronjob ditambahkan agar bash script `soal4.sh` dijalankan tiap jam dan file sys
 ##### c. Masukkan record tadi ke dalam file logs yang berada pada direktori /home/[user]/modul1.
 ##### d. Jalankan script tadi setiap 6 menit dari menit ke 2 hingga 30, contoh 13:02, 13:08, 13:14, dst.
 
-Untuk memfilter record syslog yang diambil yang memenuhi kondisi yang disyaratkan, digunakan `awk` dalam sebuah bash script.
+Untuk memfilter record syslog yang memenuhi kondisi yang disyaratkan, digunakan `awk` dalam sebuah bash script.
 Isi bash script `soal5.sh` :
 
 ```sh
