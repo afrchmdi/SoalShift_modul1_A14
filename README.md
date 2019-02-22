@@ -157,7 +157,7 @@ awk -F '->' '{ print "   ", $2 }' ye.txt | head -3
 ##### c. Urutan nama file tidak boleh ada yang terlewatkan meski filenya dihapus.
 ##### d. Password yang dihasilkan tidak boleh sama.
 
-
+Untuk meng-*generate* password sebanyak 12 karakter dengan ketentuan pada soal, dibuat bash script *soal3.sh* :
 
 ```sh
 #!/bin/bash
@@ -186,10 +186,37 @@ do
         fi
 done
 
+```
 
++ `this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)` untuk meng-*generate* password yang disimpan dalam variabel `this`. 
 
+`tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1` untuk memnuhi syarat karakter dari password tersebut, yaitu terdiri dari huruf kecil, huruf besar, serta angka. `fold -w 12` untuk membatasi jumlah karakter password, yaitu 12 karakter. dan `head -n 1` agar ketika script dijalankan, password yang dihasilkan hanya 1.
+
+```sh
+while [ "$flag" == 0 ]
+do
+        if [ -f "$folder/password$i.txt" ]
+        then
+                ya=$(awk '{print $1}' $folder/password$i.txt)
+
+                while [ $this == $ya ]
+                do
+                        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+                done
+                let "i++"
+        else
+                echo "$this" >> $folder/password$i.txt 
+                flag=1
+                exit
+        fi
+done
 
 ```
+
+kemudian dilakukan while loop dimana selama loop dilakukan dalam folder sekarang file `password$i` dicek apakah ada dan merupakan suatu file. Kemudian variabel ya digunakan untuk menyimpan password yang ada dalam file dengan indeks `i` looping-an saat itu. Apabila password yang di-*generate* sama dengan password yang dicek saat itu (variabel ya), maka password akan digenerate lagi dikarenakan adanya syarat tidak boleh ada password yang sama.
+
+Namun jika ternyata tidak sama, maka password akan ditulis dalam file password yang indeks `i`-nya sudah di*increment*.
+
 
 ### 4. Soal 4
 ##### Lakukan backup file syslog setiap jam dengan format nama file “jam:menit tanggal- bulan-tahun”. Isi dari file backup terenkripsi dengan konversi huruf (string manipulation) yang disesuaikan dengan jam dilakukannya backup misalkan sebagai berikut:
