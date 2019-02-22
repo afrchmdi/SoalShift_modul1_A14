@@ -124,7 +124,37 @@ echo "---------------------------"
 ##### c. Urutan nama file tidak boleh ada yang terlewatkan meski filenya dihapus.
 ##### d. Password yang dihasilkan tidak boleh sama.
 
+```sh
+#!/bin/bash
 
+i=1
+folder=`pwd`
+this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+
+#echo $this $folder
+flag=0
+while [ "$flag" == 0 ]
+do
+        if [ -f "$folder/password$i.txt" ]
+        then
+                ya=$(awk '{print $1}' $folder/password$i.txt)
+
+                while [ $this == $ya ]
+                do
+                        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+                done
+                let "i++"
+        else
+                echo "$this" >> $folder/password$i.txt 
+                flag=1
+                exit
+        fi
+done
+
+
+
+
+```
 
 ### 4. Soal 4
 ##### Lakukan backup file syslog setiap jam dengan format nama file “jam:menit tanggal- bulan-tahun”. Isi dari file backup terenkripsi dengan konversi huruf (string manipulation) yang disesuaikan dengan jam dilakukannya backup misalkan sebagai berikut:
@@ -159,3 +189,5 @@ awk '/[Cc][Rr][Oo][Nn]/ && !/[Ss][Uu][Dd][Oo]/ { if ( NF < 13 ) { print $0 }}' /
 #2-30/6 * * * *
 
 ```
+
+
