@@ -102,27 +102,42 @@ echo $two
 
 echo "---------------------------"
 
+
 #SOAL C
 echo "c. Tiga product yang memiliki penjualan(quantity) terbanyak berdasarkan product line soal b : "
 printf "   "
-IFS=$'\n'
-what=($(awk -F '->' 'FNR <= 3 { printf "%s\n", $2 }' ye.txt))
 
-#printf '%s ' "${what[@]}"
-#printf '\n   %s' "${what[1]}"
+#mapfile -t what < <( awk -F '->' '{print $2}' ye.txt | head -3)
 
-printf 'Produk %s\n' "${what[0]}"
-awk -F ',' -v apa="${what[0]}" '/apa/ && ($7=='2012') { y[$5]+=$10 } END { for (o in y) { print y[o], "->", o }}' wat.csv | sort -rn |awk -F '->' '{ print " $
-printf "\n=======\n"
+#what=`awk -F '->' 'FNR <= 3 { print $2, "," }' ye.txt > hm.txt`
+
+#printf '%s\n ' "${what[0]}"
+#printf '%s\n' "${what[1]}"
+#printf '%s\n ' "${what[2]}"
+
+#ya="${what[0]}"
+ya="Personal Accessories"
+#printf 'Produk %s\n' "${what[0]}"
+echo "Produk " $ya 
+awk -F ',' '/Personal Accessories/  && ($7==2012) { y[$5]+=$10 } END { for (o in y) { print y[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
 
 
-printf '   Produk %s\n' "${what[1]}"
-awk -F ',' -v apa1="${what[1]}" '/apa1/ && ($7=='2012') { x[$5]+=$10 } END { for (o in x) { print x[o], "->", o }}' wat.csv | sort -rn |awk -F '->' '{ print $
-printf "\n=======\n"
+#yo="${what[1]}"
+#printf '   Produk %s\n' "${what[1]}"
 
-printf '   Produk %s\n' "${what[2]}"
-awk -F ',' -v apa2="${what[2]}" '/apa2/ && ($7==2012) { y[$5]+=$10 } END { for (o in y) { print y[o], "->", o }}' wat.csv | sort -rn |awk -F '->' '{ print " $
-printf "\n=======\n"
+yo="Camping Equipment"
+echo "Produk " $yo
+awk -F ',' '/Camping Equipment/ && ($7==2012) { x[$5]+=$10 } END { for (o in x) { print x[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
+
+#ye="${what[2]}"
+#printf '   Produk %s\n' "${what[2]}"
+ye="Outdoor Protection"
+echo "Produk " $ye
+awk -F ',' '/Outdoor Protection/ && ($7==2012) { y[$5]+=$10 } END { for (o in y) { print y[o], "->", o }}' wat.csv | sort -rn |awk -F '->' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
+
 
 echo "---------------------------"
 
@@ -159,6 +174,47 @@ awk -F '->' '{ print "   ", $2 }' ye.txt | head -3
 + `-v one="$one"` untuk meng*assign* variabel shell `one` ke variabel `one` awk.
 
 + `'/one/ && ($7==2012) { f[$4]+=$10 } END { for ( r in f ) { print f[r], "->", r }}' wat.csv | sort -rn > ye.txt` pencarian dilakukan dengan inputan file wat.csv, dengan filter data yang mengandung *United States*
+
+###### Soal ketiga mencari Tiga product line yang memiliki penjualan (quantity) terbanyak.
+```sh
+echo "c. Tiga product yang memiliki penjualan(quantity) terbanyak berdasarkan product line soal b : "
+printf "   "
+
+#mapfile -t what < <( awk -F '->' '{print $2}' ye.txt | head -3)
+
+#what=`awk -F '->' 'FNR <= 3 { print $2, "," }' ye.txt > hm.txt`
+
+#printf '%s\n ' "${what[0]}"
+#printf '%s\n' "${what[1]}"
+#printf '%s\n ' "${what[2]}"
+
+#ya="${what[0]}"
+ya="Personal Accessories"
+#printf 'Produk %s\n' "${what[0]}"
+echo "Produk " $ya 
+awk -F ',' '/Personal Accessories/  && ($7==2012) { y[$5]+=$10 } END { for (o in y) { print y[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
+
+
+#yo="${what[1]}"
+#printf '   Produk %s\n' "${what[1]}"
+
+yo="Camping Equipment"
+echo "Produk " $yo
+awk -F ',' '/Camping Equipment/ && ($7==2012) { x[$5]+=$10 } END { for (o in x) { print x[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
+
+#ye="${what[2]}"
+#printf '   Produk %s\n' "${what[2]}"
+ye="Outdoor Protection"
+echo "Produk " $ye
+awk -F ',' '/Outdoor Protection/ && ($7==2012) { y[$5]+=$10 } END { for (o in y) { print y[o], "->", o }}' wat.csv | sort -rn |awk -F '->' '{ print "   ", $2 }' | head -3
+printf "\n   =======\n"
+```
+
+Untuk 3 product line jawaban pada soal b, dicari data produk yang memiliki penjualan quantity terbanyak. Digunakan `awk` untuk memfilter data dengan koma (,) sebagai separator, dan masing-masing product line dicari data produk yang mengandung tahun 2012 yang jumlah penjualan quantitynya paling banyak (Diurutkan secara *descending*).
+
+`awk -F ',' '/$nama_product/ && ($7==2012) { x[$5]+=$10 } END { for (o in x) { print x[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3`
 
 
 ### 3. Soal 3
