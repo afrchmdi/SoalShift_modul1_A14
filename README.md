@@ -59,6 +59,18 @@ Akan muncul sebuah file, dan pada akhir file tersebut tambahkan cronjob
 
 Dimana crontab pertama digunakan agar bash script dijalankan ketika pukul 14:14 pada tanggal 14 Februari. Sedangkan crontab kedua digunakan untuk menjalankan bash script pada hari jumat pada bulan Februari.
 
+##### REVISI SOAL 1
+##### ---------------
+1. Revisi pada crontab
+        -> crontab yang diinginkan adalah bash akan dijalankan ketika pukul 14:14 pada tanggal 14 Februari atau pada pukul 14:14 pada hari Jumat bulan Februari. Sehingga revisi crontab sebelumnya menjadi seperti berikut :
+```sh
+14 14 14 2 5 /bin/bash /home/Penunggu/Documents/sisop1/soal1.sh
+
+```
+
+Maka bash script tersebut akan berjalan pada 14:14 tanggal 14 dan hari Jumat bulan Februari.
+
+
 ### 2. Soal 2
 ##### Anda merupakan pegawai magang pada sebuah perusahaan retail, dan anda diminta untuk memberikan laporan berdasarkan file WA_Sales_Products_2012-14.csv. Laporan yang diminta berupa:
 
@@ -216,6 +228,29 @@ Untuk 3 product line jawaban pada soal b, dicari data produk yang memiliki penju
 
 `awk -F ',' '/$nama_product/ && ($7==2012) { x[$5]+=$10 } END { for (o in x) { print x[o] "," o }}' wat.csv | sort -rn |awk -F ',' '{ print "   ", $2 }' | head -3`
 
+##### REVISI SOAL 2
+##### ---------------
+1. Revisi soal a
+```sh
+awk -F ',' '($7==2012) NR > 1 { a[$1]+=$10 } END { for ( b in a ) { print a[b], "->", b }}' wat.csv | sort -rn > hehe.txt
+printf "   "
+one=`awk -F '->' '{print $2}' hehe.txt | head -1`
+echo $one
+
+```
+($7==2012) agar pencarian data lebih spesifik dan akurat. Data yang terfilter adalah  data dimana kolom ke-7 (kolom tahun) nya bernilai 2012, bukan data yang mengandung string "2012".
+
+2. Revisi soal b
+```sh
+echo "b. Tiga product line yang memiliki penjualan (quantity) terbanyak : "
+#awk -F ',' -v neg="$one" '($1==neg) && ($7==2012) { f[$4]+=$10 } END { for ( r in f ) { print f[r]"->"r$
+awk -F ',' '($1=="United States") && ($7==2012) { f[$4]+=$10 } END { for ( r in f ) { print f[r], "->", $
+
+awk -F '->' '{ print "   ", $2 }' ye.txt | head -3 
+
+```
+Sama seperti soal a, agar pencarian data akurat dan spesifik, maka data yang dicari adalah data dimana kolom ke-1 (nama negara) bernilai "United States" dan kolom ke-7 (tahun) bernilai "2012".
+
 
 ### 3. Soal 3
 ##### Buatlah sebuah script bash yang dapat menghasilkan password secara acak sebanyak 12 karakter yang terdapat huruf besar, huruf kecil, dan angka. Password acak tersebut disimpan pada file berekstensi .txt dengan ketentuan pemberian nama sebagai berikut:
@@ -336,6 +371,45 @@ lalu akan muncul file  `/tmp/crontab.r3hRkM/crontab`. Pada bagian bawah file, ta
 
 ```
 cronjob ditambahkan agar bash script `soal4.sh` dijalankan tiap jam dan file syslog akan terbackup tiap jam.
+
+##### REVISI SOAL 4
+##### ---------------
+Terdapat kesalahan penulisan syntax tr pada script bash no.4 sehingga terjadi kesalahan dalam peng-*encrypt*an file syslog. 
+Revisi yang benar untuk bash script soal no.4 adalah :
+```sh
+#!/bin/bash
+
+JAM=`date +"%H"`
+nama=$(date +"%H:%M %d-%m%y")
+big="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
+little="abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+#WHERE=`pwd`
+WHERE=/home/Penunggu/Documents/sisop1/soal4
+
+awk '{ print $0 }' /var/log/syslog | tr "${big:0:26}${little:0:26}" "${big:$JAM:26}${little:$JAM:26}" > "$WHERE"/"$nama".txt
+
+```
+Selain itu, cara penulisan nama hasil file juga direvisi agar lebih efektif.
+
+Sedangkan untuk file *decrypt*nya :
+```sh
+#!/bin/bash
+what=$1
+#folder=`pwd`
+folder=/home/Penunggu/Documents/sisop1/soal4
+echo $what
+big="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
+little="abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+
+#change=`awk -F ':' '{ print $1 }' "/home/Penunggu/Documents/sisop1/soal4/$what"`
+
+change=`echo $what |awk -F ':' '{ print $1 }'`
+#awk -F ':' '{ print }' "$folder/$what"
+
+awk '{ print }' "$folder/$what" | tr "${big:$change:26}${little:$change:26}" "${big:0:26}${little:0:26}" > "$folder/dec$what"
+
+```
+Cara kerja file *decrypt* ini kurang lebih sama seperti enkripsi, namun nilai string tr - nya ditukar antara string1 dan string2 yang ada pada bash script *encrypt*. Hal ini dilakukan agar file syslog dapat ter*decrypt* seperti sebelum dilakukan enkripsi dimana nilai *key* yang diambil untuk menshift hurufnya adalah nilai dari jam pada nama file (2 digit pertama nama file sebelum simbol ':').
 
 
 ### 5. Soal 5
