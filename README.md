@@ -67,12 +67,16 @@ Dimana crontab pertama digunakan agar bash script dijalankan ketika pukul 14:14 
 14 14 14 2 5 /bin/bash /home/Penunggu/Documents/sisop1/soal1.sh
 
 ```
-
 Maka bash script tersebut akan berjalan pada pukul 14:14 tanggal 14 Februari dan pukul 14:14 hari Jumat bulan Februari.
+
 Agar nature.zip mau ter-unzip ketika crontab dijalankan, maka perlu ditambahkan command
+
 `cd $WHERE`
-agar sebelum unzip berjalan, kita berpindah ke direktori tempat file zip berada terlebih dahulu.
+
+Sehingga sebelum command unzip berjalan, kita berpindah ke direktori tempat file zip berada terlebih dahulu.
+
 Lalu setelah mengganti tanggal untuk mengecek apakah crontab berjalan atau tidak, dilakukan restart crontab.
+
 ```sh
 $ sudo date -s "14 Feb 2019 14:13:50"
 $ sudo service cron restart
@@ -250,6 +254,7 @@ echo "---------------------------"
 ```
 ($7==2012) agar pencarian data lebih spesifik dan akurat. Data yang terfilter adalah  data dimana kolom ke-7 (kolom tahun) nya bernilai 2012, bukan data yang mengandung string "2012".
 Variabel `one` menyimpan nama negara yang penjualannya paling banyak pada tahun 2012, yaitu negara "United States".
+
 ```sh
 this="$(echo -e "${one}" | sed -e 's/^[[:space:]]*//')"
 
@@ -290,7 +295,9 @@ awk -F ',' -v tu="$that" -v neg="$this" -v wa="$yo" -v ga="$ye" '{ if (($4==tu |
 
 ```
 Pada soal c ini, data yang diminta soal bukan produk dengan penjualan terbanyak untuk masing-masing produk line soal b,
-namun data 3 produk dengan penjualan terbanyak dimana produk line-nya 'Personal Accessories' (disimpan dalam variabel awk `tu`) atau 'Camping Equipment' (disimpan dalam variabel awk `wa`), atau 'Outdoor Protection' (yang disimpan dalam variabel awk `ga`).
+namun data dari 3 produk dengan penjualan terbanyak dimana produk line-nya 'Personal Accessories' (disimpan dalam variabel awk `tu`) atau 'Camping Equipment' (disimpan dalam variabel awk `wa`), atau 'Outdoor Protection' (yang disimpan dalam variabel awk `ga`).
+
+Untuk mem*passing* variabel bash `$that`, `$this`, `$yo`, dan `$ye` ke dalam awk, dengan cara :
 
 `-v tu="$that" -v neg="$this" -v wa="$yo" -v ga="$ye"`
 
@@ -362,6 +369,118 @@ kemudian dilakukan while loop dimana selama loop dilakukan dalam folder sekarang
 
 Namun jika ternyata tidak sama, maka password akan ditulis dalam file password yang indeks `i`-nya sudah di*increment*.
 
+##### REVISI SOAL 3
+##### ---------------
+Isi bash script revisi untuk soal 3:
+```sh
+#!/bin/bash
+
+i=1
+folder=`pwd`
+this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+
+re=[0-9a-zA-Z]+
+while ! [[ "$this" =~ ${re} ]]
+do
+        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+        #echo "eh"
+done
+
+flag=0
+while [ "$flag" == 0 ]
+do
+        for ye in `find . -type f -name "password*"` 
+        do
+                ya=$(awk '{print $1}' $folder/$ye)
+                #echo $ya
+                while [ "$this" == "$ya" ]
+                do
+                        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+
+                        re=[0-9a-zA-Z]+
+                        while ! [ "$this" ~= ${re} ]
+                        do
+                                this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+                                #echo "ganti lagi\n"
+                        done
+                done
+                #echo $i
+                let "i++"
+
+        done
+        flag=1
+done
+
+a=1
+while [ -f "password$a.txt" ]
+do
+        let "a++"
+done
+
+echo "$this" >> $folder/password$a.txt 
+#echo "ke -"$a
+
+```
+Revisi untuk soal no 3 dilakukan agar password yang dibuat benar-benar terdiri dari huruf kecil-huruf besar-angka. Untuk memastikan tiap randoman yang dihasilkan (`$this`) memenuhi syarat tersebut, maka dilakukan pengecekan tiap kali password digenerate.
+```sh
+re=[0-9a-zA-Z]+
+while ! [[ "$this" =~ ${re} ]]
+do
+        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+        #echo "eh"
+done
+
+```
+Jadi, selama nilai dari `$this` tidak terdiri dari paling tidak 1 atau lebih angka, huruf kecil, dan huruf besar, maka password akan terus digenerate.
+```sh
+re=[0-9a-zA-Z]+
+while ! [[ "$this" =~ ${re} ]]
+
+```
+Dua line ini lah yang memastikan bahwa `$this` terdiri dari paling tidak satu atau lebih huruf kecil, huruf besar, dan angka (dengan menggunakan *regex*).
+
+Lalu setelah password yang memenuhi ketentuan soal telah dibuat dan disimpan dalam variabel `$this`, dilakukan loop untuk melakukan pengecekan apakah ada password lain yang telah dibuat sebelumnya yang sama persis.
+```sh
+flag=0
+while [ "$flag" == 0 ]
+do
+        for ye in `find . -type f -name "password*"` 
+        do
+                ya=$(awk '{print $1}' $folder/$ye)
+                #echo $ya
+                while [ "$this" == "$ya" ]
+                do
+                        this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+
+                        re=[0-9a-zA-Z]+
+                        while ! [ "$this" ~= ${re} ]
+                        do
+                                this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+                                #echo "ganti lagi\n"
+                        done
+                done
+                #echo $i
+                let "i++"
+
+        done
+        flag=1
+done
+
+```
+Untuk tiap file `password*` yang ada pada direktori tersebut, nilai `$this` akan dicek dengan seluruh password yang disimpan dalam tiap file password yang telah dibuat sebelumnya. Jika ada yang sama, maka nilai `$this` akan digenerate kembali.
+Setelah dipastikan bahwa nilai password tidak ada yang sama, maka password `$this` dimasukkan kedalam file password yang baru.
+```sh
+a=1
+while [ -f "password$a.txt" ]
+do
+        let "a++"
+done
+
+echo "$this" >> $folder/password$a.txt 
+#echo "ke -"$a
+
+```
+Untuk mengecek file password indeks-a berapa yang belum ada, maka dilakukan looping kembali hingga ditemukan file password pada index -a keberapa yang belum ada. Nilai `$this` kemudian dimasukkan ke file password dengan indeks a yang didapat dari loopingan. Sehingga pada akhirnya pada direktori tersebut file password akan terbuat dengan indeks berurutan tanpa ada yang terlewat.
 
 ### 4. Soal 4
 ##### Lakukan backup file syslog setiap jam dengan format nama file “jam:menit tanggal- bulan-tahun”. Isi dari file backup terenkripsi dengan konversi huruf (string manipulation) yang disesuaikan dengan jam dilakukannya backup misalkan sebagai berikut:
@@ -423,27 +542,28 @@ Revisi yang benar untuk bash script soal no.4 adalah :
 
 JAM=`date +"%H"`
 nama=$(date +"%H:%M %d-%m%y")
+
 big="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
 little="abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
-#WHERE=`pwd`
-WHERE=/home/Penunggu/Documents/sisop1/soal4
+
+WHERE=`pwd`
+#WHERE=/home/Penunggu/Documents/sisop1/soal4
 
 awk '{ print $0 }' /var/log/syslog | tr "${big:0:26}${little:0:26}" "${big:$JAM:26}${little:$JAM:26}" > "$WHERE"/"$nama".txt
 
 ```
 Selain itu, cara penulisan nama hasil file juga direvisi agar lebih efektif.
 
-Sedangkan untuk file *decrypt*nya :
+Sedangkan untuk file *decrypt*nya (`revdecrypt4.sh`):
 ```sh
 #!/bin/bash
 what=$1
-#folder=`pwd`
-folder=/home/Penunggu/Documents/sisop1/soal4
-echo $what
+folder=`pwd`
+#folder=/home/Penunggu/Documents/sisop1/soal4
+#echo $what
+
 big="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
 little="abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
-
-#change=`awk -F ':' '{ print $1 }' "/home/Penunggu/Documents/sisop1/soal4/$what"`
 
 change=`echo $what |awk -F ':' '{ print $1 }'`
 #awk -F ':' '{ print }' "$folder/$what"
@@ -452,6 +572,12 @@ awk '{ print }' "$folder/$what" | tr "${big:$change:26}${little:$change:26}" "${
 
 ```
 Cara kerja file *decrypt* ini kurang lebih sama seperti enkripsi, namun nilai string tr - nya ditukar antara string1 dan string2 yang ada pada bash script *encrypt*. Hal ini dilakukan agar file syslog dapat ter*decrypt* seperti sebelum dilakukan enkripsi dimana nilai *key* yang diambil untuk menshift hurufnya adalah nilai dari jam pada nama file (2 digit pertama nama file sebelum simbol ':').
+
+Untuk melakukan *decrypt* pada file log yang telah ter*encrypt*, dengan command :
+
+`$ bash revdecrypt4.sh "$nama-file"`
+
+`$nama-file` yang dipassingkan kemudian dimasukkan dalam variabel `$what`. Nilai inilah yang menjadi *key* untuk dilakukan shift agar tiap huruf dalam file enkripsi dapat terdecrypt kembali seperti semula (dimana nilai *key* encrypt suatu file harus sama dengan nilai *key* decrypt annya yang diambil dari jam file tersebut dibuat).
 
 
 ### 5. Soal 5
