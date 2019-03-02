@@ -401,11 +401,11 @@ do
                         while ! [ "$this" ~= ${re} ]
                         do
                                 this=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
-                                #echo "ganti lagi\n"
+                                #echo "ganti lagi :(\n"
                         done
                 done
                 #echo $i
-                let "i++"
+                #let "i++"
 
         done
         flag=1
