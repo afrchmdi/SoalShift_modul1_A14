@@ -22,7 +22,7 @@ WHERE=`pwd`
 i=1
 
 #echo "$WHERE"
-
+cd $WHERE
 unzip $WHERE/nature.zip
 
 for f in $WHERE/nature/*.jpg
@@ -68,8 +68,15 @@ Dimana crontab pertama digunakan agar bash script dijalankan ketika pukul 14:14 
 
 ```
 
-Maka bash script tersebut akan berjalan pada 14:14 tanggal 14 dan hari Jumat bulan Februari.
-
+Maka bash script tersebut akan berjalan pada pukul 14:14 tanggal 14 Februari dan pukul 14:14 hari Jumat bulan Februari.
+Agar nature.zip mau ter-unzip ketika crontab dijalankan, maka perlu ditambahkan command
+`cd $WHERE`
+agar sebelum unzip berjalan, kita berpindah ke direktori tempat file zip berada terlebih dahulu.
+Lalu setelah mengganti tanggal untuk mengecek apakah crontab berjalan atau tidak, dilakukan restart crontab.
+```sh
+$ sudo date -s "14 Feb 2019 14:13:50"
+$ sudo service cron restart
+```
 
 ### 2. Soal 2
 ##### Anda merupakan pegawai magang pada sebuah perusahaan retail, dan anda diminta untuk memberikan laporan berdasarkan file WA_Sales_Products_2012-14.csv. Laporan yang diminta berupa:
@@ -232,25 +239,60 @@ Untuk 3 product line jawaban pada soal b, dicari data produk yang memiliki penju
 ##### ---------------
 1. Revisi soal a
 ```sh
-awk -F ',' '($7==2012) NR > 1 { a[$1]+=$10 } END { for ( b in a ) { print a[b], "->", b }}' wat.csv | sort -rn > hehe.txt
-printf "   "
-one=`awk -F '->' '{print $2}' hehe.txt | head -1`
-echo $one
+one=`awk -F ',' '($7==2012) { a[$1]+=$10 } END { for ( b in a ) { print a[b], "->", b }}' wat.csv | sort -rn | awk -F '->' '( NR==1 ) { print$2 }'`
+
+this="$(echo -e "${one}" | sed -e 's/^[[:space:]]*//')"
+
+echo $this
+
+echo "---------------------------"
 
 ```
 ($7==2012) agar pencarian data lebih spesifik dan akurat. Data yang terfilter adalah  data dimana kolom ke-7 (kolom tahun) nya bernilai 2012, bukan data yang mengandung string "2012".
+Variabel `one` menyimpan nama negara yang penjualannya paling banyak pada tahun 2012, yaitu negara "United States".
+```sh
+this="$(echo -e "${one}" | sed -e 's/^[[:space:]]*//')"
+
+```
+Line ini berfungsi untuk menghilangkan spasi pada awal kata sebelum United sehingga bisa digunakan untuk memfilter data pada soal b dan c dengan tepat.
 
 2. Revisi soal b
 ```sh
 echo "b. Tiga product line yang memiliki penjualan (quantity) terbanyak : "
-#awk -F ',' -v neg="$one" '($1==neg) && ($7==2012) { f[$4]+=$10 } END { for ( r in f ) { print f[r]"->"r$
-awk -F ',' '($1=="United States") && ($7==2012) { f[$4]+=$10 } END { for ( r in f ) { print f[r], "->", $
 
-awk -F '->' '{ print "   ", $2 }' ye.txt | head -3 
+awk -F ',' -v neg="$this" '{ if ( $1==neg && $7==2012 ) { f[$4] += $10 }} END { for ( r in f ) { print f[r]"->"r }}' wat.csv | sort -rn > ye.txt
+
+awk -F '->' '{ print "   ", $2 }' ye.txt | head -3
+
+echo "---------------------------"
 
 ```
-Sama seperti soal a, agar pencarian data akurat dan spesifik, maka data yang dicari adalah data dimana kolom ke-1 (nama negara) bernilai "United States" dan kolom ke-7 (tahun) bernilai "2012".
+Sama seperti soal a, agar pencarian data akurat dan spesifik, maka data yang dicari adalah data dimana kolom ke-1 (nama negara) bernilai sama seperti nilai variabel `$this` ("United States") dan kolom ke-7 (tahun) bernilai "2012". Agar variabel `$this` dapat diakses dalam `awk`, maka perlu dilakukan *passing* variabel.
 
+`-v neg="$this"`
+
+3. Revisi soal c
+```sh
+echo "c. Tiga product yang memiliki penjualan(quantity) terbanyak berdasarkan product line soal b : "
+#printf "   "
+
+satu=`awk -F '->' 'NR==1 { print $2 }' ye.txt`
+dua=`awk -F '->' 'NR==2 { print $2 }' ye.txt`
+tiga=`awk -F '->' 'NR==3 { print $2 }' ye.txt`
+
+that="$(echo -e "${satu}" | sed -e 's/^[[:space:]]*//')"
+
+yo="$(echo -e "${dua}" | sed -e 's/^[[:space:]]*//')"
+
+ye="$(echo -e "${tiga}" | sed -e 's/^[[:space:]]*//')"
+
+awk -F ',' -v tu="$that" -v neg="$this" -v wa="$yo" -v ga="$ye" '{ if (($4==tu || $4==wa || $4==ga) && $7==2012 && $1==neg) { y[$6]+=$10 }} END { for (o in y) { print y[o] "," o }}' wat.csv | sort -rn | awk -F ',' '{ print "   ", $2 }' | head -3
+
+```
+Pada soal c ini, data yang diminta soal bukan produk dengan penjualan terbanyak untuk masing-masing produk line soal b,
+namun data 3 produk dengan penjualan terbanyak dimana produk line-nya 'Personal Accessories' (disimpan dalam variabel awk `tu`) atau 'Camping Equipment' (disimpan dalam variabel awk `wa`), atau 'Outdoor Protection' (yang disimpan dalam variabel awk `ga`).
+
+`-v tu="$that" -v neg="$this" -v wa="$yo" -v ga="$ye"`
 
 ### 3. Soal 3
 ##### Buatlah sebuah script bash yang dapat menghasilkan password secara acak sebanyak 12 karakter yang terdapat huruf besar, huruf kecil, dan angka. Password acak tersebut disimpan pada file berekstensi .txt dengan ketentuan pemberian nama sebagai berikut:
